@@ -50,8 +50,8 @@ public class Gui extends JFrame implements ActionListener {
                             JOptionPane.showMessageDialog(this, "It's a draw!");
                         }
                         resetBoard();
-                    } else {
-                        // AI's turn
+                    } else { // AI's turn
+                        game.switchPlayer(); //gives current player to the ai
                         int[] aiMove = ai.getAIMove(game.getBoard());
                         game.makeMove(aiMove[0], aiMove[1]);
                         buttons[aiMove[0]][aiMove[1]].setText(Character.toString(game.getCurrentPlayer()));
@@ -66,6 +66,8 @@ public class Gui extends JFrame implements ActionListener {
                             }
                             resetBoard();
                         }
+
+                        game.switchPlayer(); //gives current player back to human
                     }
                 }
             }

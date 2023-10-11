@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Game {
     private char[][] board = new char[3][3];
     private char currentPlayer = 'X';
@@ -10,10 +12,19 @@ public class Game {
         return currentPlayer;
     }
 
+    public void switchPlayer() {
+        currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+    }
+
+    public void printboard() {
+        for (int i = 0; i < 3; i++) {
+            System.out.println(Arrays.toString(board[i]));
+        }
+    }
+
     public boolean makeMove(int row, int col) {
         if (isValidMove(row, col)) {
             board[row][col] = currentPlayer;
-            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
             return true;
         }
         return false;
@@ -63,6 +74,7 @@ public class Game {
     }
 
     public void resetBoard() {
+        printboard();
         initializeBoard();
     }
 
