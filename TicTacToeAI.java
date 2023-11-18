@@ -1,77 +1,93 @@
-
+import java.util.Random;
 
 public class TicTacToeAI {
-    public int[] getAIMove(char[][] board) {
-        int[] bestMove = minimax(board, 'O'); // 'O' represents the AI player
-        return bestMove;
+    public int[] getAIMove(char[][] board, String difficulty) {
+        if (difficulty.equals("Easy")) {
+            return getRandomMove(board);
+        } else if (difficulty.equals("Medium")) {
+            return getStrategicMove(board);
+        } else if (difficulty.equals("Hard")) {
+            return getAggressiveMove(board);
+        } else {
+            // Default to random move if difficulty selection is invalid
+            return getRandomMove(board);
+        }
     }
 
-    private static int[] minimax(char[][] board, char player) {
-        // Check for terminal states (win/lose/tie)
-        int[] bestMove = { -1, -1 };
-        int bestScore = (player == 'O') ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        char opponent = (player == 'O') ? 'X' : 'O';
+    private int[] getRandomMove(char[][] board) {
+        Random random = new Random();
+        int row, col;
+        do {
+            row = random.nextInt(3);
+            col = random.nextInt(3);
+        } while (board[row][col] != ' ');
+        return new int[]{row, col};
+    }
 
+    private int[] getStrategicMove(char[][] board) {
+        // Implement logic for medium difficulty
+        // Placeholder logic to prioritize blocking the player if they are close to winning
+        for (int i = 0; i < 3; i++) {
+            if ((board[i][0] == board[i][1] && board[i][0] != ' ') || (board[i][1] == board[i][2] && board[i][1] != ' ')) {
+                if (board[i][0] == ' ') {
+                    return new int[]{i, 0};
+                } else if (board[i][1] == ' ') {
+                    return new int[]{i, 1};
+                } else if (board[i][2] == ' ') {
+                    return new int[]{i, 2};
+                }
+            }
+
+            if ((board[0][i] == board[1][i] && board[0][i] != ' ') || (board[1][i] == board[2][i] && board[1][i] != ' ')) {
+                if (board[0][i] == ' ') {
+                    return new int[]{0, i};
+                } else if (board[1][i] == ' ') {
+                    return new int[]{1, i};
+                } else if (board[2][i] == ' ') {
+                    return new int[]{2, i};
+                }
+            }
+        }
+
+        // Add logic for blocking diagonals if needed...
+
+        return getRandomMove(board); // Placeholder random move
+    }
+
+    private int[] getAggressiveMove(char[][] board) {
+        // Check if AI can win in the next move
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 if (board[row][col] == ' ') {
-                    board[row][col] = player;
-                    int score = minimaxHelper(board, player, opponent, 0, false);
-                    board[row][col] = ' '; // Undo the move
-
-                    if ((player == 'O' && score > bestScore) || (player == 'X' && score < bestScore)) {
-                        bestScore = score;
-                        bestMove[0] = row;
-                        bestMove[1] = col;
+                    board[row][col] = 'O';
+                    if (evaluate(board) == 10) {
+                        board[row][col] = ' '; // Reset the test move
+                        return new int[]{row, col}; // Winning move found
                     }
+                    board[row][col] = ' '; // Reset the test move
                 }
             }
         }
-
-        return bestMove;
-    }
-
-    private static int minimaxHelper(char[][] board, char player, char opponent, int depth, boolean isMaximizing) {
-        // Evaluate the board and return a score
-        int score = evaluate(board);
-
-        // If the game is over, return the score
-        if (score == 10 || score == -10)
-            return score;
-
-        // If there are no more moves, it's a tie
-        if (!isMoveLeft(board))
-            return 0;
-
-        // If it's the AI's turn
-        if (isMaximizing) {
-            int bestScore = Integer.MIN_VALUE;
-            for (int row = 0; row < 3; row++) {
-                for (int col = 0; col < 3; col++) {
-                    if (board[row][col] == ' ') {
-                        board[row][col] = player;
-                        int currentScore = minimaxHelper(board, player, opponent, depth + 1, false);
-                        bestScore = Math.max(bestScore, currentScore);
-                        board[row][col] = ' '; // Undo the move
+    
+        // Check if player can win in the next move and block it
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                if (board[row][col] == ' ') {
+                    board[row][col] = 'X';
+                    if (evaluate(board) == -10) {
+                        board[row][col] = ' '; // Reset the test move
+                        return new int[]{row, col}; // Block player's winning move
                     }
+                    board[row][col] = ' '; // Reset the test move
                 }
             }
-            return bestScore;
-        } else { // If it's the opponent's turn
-            int bestScore = Integer.MAX_VALUE;
-            for (int row = 0; row < 3; row++) {
-                for (int col = 0; col < 3; col++) {
-                    if (board[row][col] == ' ') {
-                        board[row][col] = opponent;
-                        int currentScore = minimaxHelper(board, player, opponent, depth + 1, true);
-                        bestScore = Math.min(bestScore, currentScore);
-                        board[row][col] = ' '; // Undo the move
-                    }
-                }
-            }
-            return bestScore;
         }
+    
+        // If no immediate winning or blocking moves are available,
+        // prioritize getting a strategic move
+        return getStrategicMove(board);
     }
+    
 
     private static int evaluate(char[][] board) {
         // Check rows, columns, and diagonals for a win
@@ -101,15 +117,5 @@ public class TicTacToeAI {
 
         // No winner yet
         return 0;
-    }
-
-    private static boolean isMoveLeft(char[][] board) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                if (board[row][col] == ' ')
-                    return true;
-            }
-        }
-        return false;
     }
 }
