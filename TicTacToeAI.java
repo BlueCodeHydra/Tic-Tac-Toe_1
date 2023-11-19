@@ -69,13 +69,13 @@ public class TicTacToeAI {
             }
         }
     
-        // Check if player can win in the next move and block it
+        // Check if AI can block the player's winning move or prioritize its own winning move
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
                 if (board[row][col] == ' ') {
-                    board[row][col] = 'X';
+                    board[row][col] = 'X'; // Simulate opponent's move
                     if (evaluate(board) == -10) {
-                        board[row][col] = 'O'; // Block player's winning move by placing 'O' here
+                        board[row][col] = 'O'; // Block player's winning move
                         return new int[]{row, col};
                     }
                     board[row][col] = ' '; // Reset the test move
@@ -93,6 +93,7 @@ public class TicTacToeAI {
         // prioritize getting a strategic move
         return getStrategicMove(board);
     }
+    
     
     private int[] getWinningMove(char[][] board) {
         // Check rows for a winning move
