@@ -1,36 +1,13 @@
-/* ===============================================================================================================
-                                                                                                                         
-            ___   ___                                                                                                  
- /__  ___/     / /      //   ) )        /__  ___/   // | |     //   ) )        /__  ___/   //   ) )   //   / / 
-   / /        / /      //                 / /      //__| |    //                 / /      //   / /   //____    
-  / /        / /      //         ____    / /      / ___  |   //         ____    / /      //   / /   / ____     
- / /        / /      //                 / /      //    | |  //                 / /      //   / /   //          
-/ /      __/ /___   ((____/ /          / /      //     | | ((____/ /          / /      ((___/ /   //____/ /    
-
-==================================================================================================================
-
-# Michael Dowling
-# Michael Richards
-
-# CSE: Artificial Intelegience 
-# 11-18-2023
-
-# Ai - Three different main principles as to which difficulty level the user chooses
-
-#===========================================
-*/
-
-
 import java.util.Random;
 
 public class TicTacToeAI {
     public int[] getAIMove(char[][] board, String difficulty) {
         if (difficulty.equals("Easy")) {
-            return getRandomMove(board);
+            return getEasyMove(board);
         } else if (difficulty.equals("Medium")) {
-            return getStrategicMove(board);
+            return getMediumMove(board);
         } else if (difficulty.equals("Hard")) {
-            return getAggressiveMove(board);
+            return getHardMove(board);
         } else {
             // Default to random move if difficulty selection is invalid
             return getRandomMove(board);
@@ -41,158 +18,146 @@ public class TicTacToeAI {
         Random random = new Random();
         int row, col;
         do {
-            row = random.nextInt(3);
-            col = random.nextInt(3);
+            row = random.nextInt(board.length);
+            col = random.nextInt(board.length);
         } while (board[row][col] != ' ');
         return new int[]{row, col};
     }
 
-    private int[] getStrategicMove(char[][] board) {
-        // Implement logic for medium difficulty
-        // Placeholder logic to prioritize blocking the player if they are close to winning
-        for (int i = 0; i < 3; i++) {
-            if ((board[i][0] == board[i][1] && board[i][0] != ' ') || (board[i][1] == board[i][2] && board[i][1] != ' ')) {
-                if (board[i][0] == ' ') {
-                    return new int[]{i, 0};
-                } else if (board[i][1] == ' ') {
-                    return new int[]{i, 1};
-                } else if (board[i][2] == ' ') {
-                    return new int[]{i, 2};
-                }
-            }
-
-            if ((board[0][i] == board[1][i] && board[0][i] != ' ') || (board[1][i] == board[2][i] && board[1][i] != ' ')) {
-                if (board[0][i] == ' ') {
-                    return new int[]{0, i};
-                } else if (board[1][i] == ' ') {
-                    return new int[]{1, i};
-                } else if (board[2][i] == ' ') {
-                    return new int[]{2, i};
-                }
-            }
-        }
-
-        // Add logic for blocking diagonals if needed...
-
-        return getRandomMove(board); // Placeholder random move
+    private int[] getEasyMove(char[][] board) {
+        return getStrategicMove(board, 'X');
     }
 
-    private int[] getAggressiveMove(char[][] board) {
+    private int[] getMediumMove(char[][] board) {
+        // The medium move will aim to block the opponent if they have two in a row.
+        return getStrategicMove(board, 'O');
+    }
+
+    private int[] getHardMove(char[][] board) {
         // Check if AI can win in the next move
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                if (board[row][col] == ' ') {
-                    board[row][col] = 'O';
-                    if (evaluate(board) == 10) {
-                        board[row][col] = ' '; // Reset the test move
-                        return new int[]{row, col}; // Winning move found
-                    }
-                    board[row][col] = ' '; // Reset the test move
-                }
-            }
-        }
-    
-        // Check if AI can block the player's winning move or prioritize its own winning move
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                if (board[row][col] == ' ') {
-                    board[row][col] = 'X'; // Simulate opponent's move
-                    if (evaluate(board) == -10) {
-                        board[row][col] = 'O'; // Block player's winning move
-                        return new int[]{row, col};
-                    }
-                    board[row][col] = ' '; // Reset the test move
-                }
-            }
-        }
-    
-        // Prioritize getting a winning move if available
-        int[] winningMove = getWinningMove(board);
+        int[] winningMove = getWinningMove(board, 'O');
         if (winningMove != null) {
-            return winningMove;
+            return winningMove; // Winning move found
         }
     
-        // If no immediate winning or blocking moves are available,
-        // prioritize getting a strategic move
-        return getStrategicMove(board);
+        // Check if AI can block the player's winning move
+        int[] blockingMove = getWinningMove(board, 'X');
+        if (blockingMove != null) {
+            return blockingMove; // Block player's winning move
+        }
+    
+        // Prioritize getting a strategic move
+        return getStrategicMove(board, 'O');
     }
     
-    
-    private int[] getWinningMove(char[][] board) {
+
+    // This method identifies a winning move for a given player
+    private int[] getWinningMove(char[][] board, char player) {
+        int size = board.length;
         // Check rows for a winning move
-        for (int i = 0; i < 3; i++) {
-            if (board[i][0] == board[i][1] && board[i][0] == 'O' && board[i][2] == ' ') {
-                return new int[]{i, 2};
+        for (int i = 0; i < size; i++) {
+            int count = 0;
+            int emptyCellIndex = -1;
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] == player) {
+                    count++;
+                } else if (board[i][j] == ' ') {
+                    emptyCellIndex = j;
+                }
             }
-            if (board[i][1] == board[i][2] && board[i][1] == 'O' && board[i][0] == ' ') {
-                return new int[]{i, 0};
-            }
-            if (board[i][0] == board[i][2] && board[i][0] == 'O' && board[i][1] == ' ') {
-                return new int[]{i, 1};
+            if (count == size - 1 && emptyCellIndex != -1) {
+                return new int[]{i, emptyCellIndex};
             }
         }
-    
+
         // Check columns for a winning move
-        for (int i = 0; i < 3; i++) {
-            if (board[0][i] == board[1][i] && board[0][i] == 'O' && board[2][i] == ' ') {
-                return new int[]{2, i};
+        for (int i = 0; i < size; i++) {
+            int count = 0;
+            int emptyCellIndex = -1;
+            for (int j = 0; j < size; j++) {
+                if (board[j][i] == player) {
+                    count++;
+                } else if (board[j][i] == ' ') {
+                    emptyCellIndex = j;
+                }
             }
-            if (board[1][i] == board[2][i] && board[1][i] == 'O' && board[0][i] == ' ') {
-                return new int[]{0, i};
-            }
-            if (board[0][i] == board[2][i] && board[0][i] == 'O' && board[1][i] == ' ') {
-                return new int[]{1, i};
+            if (count == size - 1 && emptyCellIndex != -1) {
+                return new int[]{emptyCellIndex, i};
             }
         }
-    
+
         // Check diagonals for a winning move
-        if (board[0][0] == board[1][1] && board[0][0] == 'O' && board[2][2] == ' ') {
-            return new int[]{2, 2};
+        int count = 0;
+        int emptyCellIndex = -1;
+        for (int i = 0; i < size; i++) {
+            if (board[i][i] == player) {
+                count++;
+            } else if (board[i][i] == ' ') {
+                emptyCellIndex = i;
+            }
         }
-        if (board[1][1] == board[2][2] && board[1][1] == 'O' && board[0][0] == ' ') {
-            return new int[]{0, 0};
+        if (count == size - 1 && emptyCellIndex != -1) {
+            return new int[]{emptyCellIndex, emptyCellIndex};
         }
-        if (board[0][2] == board[1][1] && board[0][2] == 'O' && board[2][0] == ' ') {
-            return new int[]{2, 0};
+
+        count = 0;
+        emptyCellIndex = -1;
+        for (int i = 0; i < size; i++) {
+            if (board[i][size - 1 - i] == player) {
+                count++;
+            } else if (board[i][size - 1 - i] == ' ') {
+                emptyCellIndex = i;
+            }
         }
-        if (board[1][1] == board[2][0] && board[1][1] == 'O' && board[0][2] == ' ') {
-            return new int[]{0, 2};
+        if (count == size - 1 && emptyCellIndex != -1) {
+            return new int[]{emptyCellIndex, size - 1 - emptyCellIndex};
         }
-    
+
         return null; // No immediate winning move found
     }
-    
-    
-    
-    
 
-    private static int evaluate(char[][] board) {
-        // Check rows, columns, and diagonals for a win
-        for (int row = 0; row < 3; row++) {
-            if (board[row][0] == board[row][1] && board[row][1] == board[row][2]) {
-                if (board[row][0] == 'O') return 10;
-                else if (board[row][0] == 'X') return -10;
+    private int[] getStrategicMove(char[][] board, char player) {
+        int size = board.length;
+
+        // Prioritize placing marks to complete a row, column, or diagonal
+        for (int i = 0; i < size; i++) {
+            int[] rowCol = checkForRowColumn(board, i, player);
+            if (rowCol != null) {
+                return rowCol;
             }
         }
 
-        for (int col = 0; col < 3; col++) {
-            if (board[0][col] == board[1][col] && board[1][col] == board[2][col]) {
-                if (board[0][col] == 'O') return 10;
-                else if (board[0][col] == 'X') return -10;
+        // If no immediate winning move, make a random move
+        return getRandomMove(board);
+    }
+
+    private int[] checkForRowColumn(char[][] board, int index, char player) {
+        int size = board.length;
+        int countRow = 0, countColumn = 0;
+        int emptyCellIndexRow = -1, emptyCellIndexColumn = -1;
+
+        for (int i = 0; i < size; i++) {
+            if (board[index][i] == player) {
+                countRow++;
+            } else if (board[index][i] == ' ') {
+                emptyCellIndexRow = i;
+            }
+
+            if (board[i][index] == player) {
+                countColumn++;
+            } else if (board[i][index] == ' ') {
+                emptyCellIndexColumn = i;
             }
         }
 
-        if (board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
-            if (board[0][0] == 'O') return 10;
-            else if (board[0][0] == 'X') return -10;
+        if (countRow == size - 1 && emptyCellIndexRow != -1) {
+            return new int[]{index, emptyCellIndexRow};
         }
 
-        if (board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
-            if (board[0][2] == 'O') return 10;
-            else if (board[0][2] == 'X') return -10;
+        if (countColumn == size - 1 && emptyCellIndexColumn != -1) {
+            return new int[]{emptyCellIndexColumn, index};
         }
 
-        // No winner yet
-        return 0;
+        return null;
     }
 }

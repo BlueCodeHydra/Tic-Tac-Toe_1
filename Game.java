@@ -1,34 +1,13 @@
-/* ===============================================================================================================
-                                                                                                                         
-            ___   ___                                                                                                  
- /__  ___/     / /      //   ) )        /__  ___/   // | |     //   ) )        /__  ___/   //   ) )   //   / / 
-   / /        / /      //                 / /      //__| |    //                 / /      //   / /   //____    
-  / /        / /      //         ____    / /      / ___  |   //         ____    / /      //   / /   / ____     
- / /        / /      //                 / /      //    | |  //                 / /      //   / /   //          
-/ /      __/ /___   ((____/ /          / /      //     | | ((____/ /          / /      ((___/ /   //____/ /    
-
-==================================================================================================================
-
-# Michael Dowling
-# Michael Richards
-
-# CSE: Artificial Intelegience 
-# 11-18-2023
-
-
-# Game- Has all the game logic
-
-#===========================================
-*/
-
-
 import java.util.Arrays;
 
 public class Game {
-    private char[][] board = new char[3][3];
+    private char[][] board;
     private char currentPlayer = 'X';
+    private int size;
 
-    public Game() {
+    public Game(int size) {
+        this.size = size;
+        this.board = new char[size][size];
         initializeBoard();
     }
 
@@ -40,8 +19,8 @@ public class Game {
         currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
     }
 
-    public void printboard() {
-        for (int i = 0; i < 3; i++) {
+    public void printBoard() {
+        for (int i = 0; i < size; i++) {
             System.out.println(Arrays.toString(board[i]));
         }
     }
@@ -66,61 +45,85 @@ public class Game {
         char[][] board = getBoard();
 
         // Check rows, columns, and diagonals for a win
-        for (int row = 0; row < 3; row++) {
-            if (board[row][0] == board[row][1] && board[row][1] == board[row][2]) {
-                if (board[row][0] == 'O') return 'O';
-                else if (board[row][0] == 'X') return 'X';
+        for (int i = 0; i < size; i++) {
+            if (checkLine(board[i])) {
+                return board[i][0];
+            }
+
+            char[] column = new char[size];
+            for (int j = 0; j < size; j++) {
+                column[j] = board[j][i];
+            }
+            if (checkLine(column)) {
+                return column[0];
             }
         }
 
-        for (int col = 0; col < 3; col++) {
-            if (board[0][col] == board[1][col] && board[1][col] == board[2][col]) {
-                if (board[0][col] == 'O') return 'O';
-                else if (board[0][col] == 'X') return 'X';
-            }
+        char[] diagonal1 = new char[size];
+        char[] diagonal2 = new char[size];
+        for (int i = 0; i < size; i++) {
+            diagonal1[i] = board[i][i];
+            diagonal2[i] = board[size - 1 - i][i];
         }
-
-        if (board[0][0] == board[1][1] && board[1][1] == board[2][2]) {
-            if (board[0][0] == 'O') return 'O';
-            else if (board[0][0] == 'X') return 'X';
+        if (checkLine(diagonal1)) {
+            return diagonal1[0];
         }
-
-        if (board[0][2] == board[1][1] && board[1][1] == board[2][0]) {
-            if (board[0][2] == 'O') return 'O';
-            else if (board[0][2] == 'X') return 'X';
+        if (checkLine(diagonal2)) {
+            return diagonal2[0];
         }
 
         return ' '; // No winner yet
     }
+
+    // Updated helper method to check a line for a win
+    private boolean checkLine(char[] line) {
+        char currentPlayer = line[0];
+        int count = 1;
+
+        for (int i = 1; i < line.length; i++) {
+            if (line[i] == currentPlayer && currentPlayer != ' ') {
+                count++;
+                if (count == size) {
+                    return true; // Player has reached the win condition
+                }
+            } else {
+                currentPlayer = line[i];
+                count = 1;
+            }
+        }
+        return false;
+    }
+
 
     public char[][] getBoard() {
         return board;
     }
 
     public void resetBoard() {
-        printboard();
+        printBoard();
         initializeBoard();
     }
 
     private void initializeBoard() {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
                 board[i][j] = ' ';
             }
         }
     }
 
     private boolean isValidMove(int row, int col) {
-        return (row >= 0 && row < 3 && col >= 0 && col < 3 && board[row][col] == ' ');
+        return (row >= 0 && row < size && col >= 0 && col < size && board[row][col] == ' ');
     }
 
     private boolean isBoardFull() {
         char[][] board = getBoard();
 
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                if (board[row][col] == ' ')
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] == ' ') {
                     return false; // If there is an empty cell, the board is not full
+                }
             }
         }
         return true; // All cells are occupied, and no winner, it's a draw
